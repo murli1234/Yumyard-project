@@ -13,6 +13,7 @@ const AdminPage = () => {
     const [editItem, setEditItem] = useState({});
     const [filterCategory, setFilterCategory] = useState('ALL');
     const [showSettings, setShowSettings] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
     const [adminCreds, setAdminCreds] = useState({ username: '', password: '' });
 
     useEffect(() => {
@@ -25,6 +26,7 @@ const AdminPage = () => {
         const updated = storage.saveItem(newItem);
         setItems(updated);
         setNewItem({ name: '', description: '', price: 0, category: '', imageUrl: '' });
+        setShowAddModal(false);
     };
 
     const handleImageFile = (e, isEditing = false) => {
@@ -102,76 +104,7 @@ const AdminPage = () => {
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Add Item Form */}
-                    <div className="lg:col-span-1">
-                        <GlassCard className="lg:sticky lg:top-8 border-yellow-500/10 h-fit">
-                            <h2 className="text-xl font-black mb-6 flex items-center space-x-2 italic text-yellow-500 underline decoration-yellow-500/30 underline-offset-8">
-                                <PlusSquare className="w-5 h-5" />
-                                <span className="uppercase tracking-tighter">New Entry</span>
-                            </h2>
-                            
-                            {/* Image Preview Area */}
-                            <div className="mb-6 aspect-video rounded-3xl bg-black/40 border border-white/5 overflow-hidden relative group">
-                                {newItem.imageUrl ? (
-                                    <img src={newItem.imageUrl} className="w-full h-full object-cover" alt="Preview" onError={(e) => e.target.src='https://placehold.co/600x400/111/FACC15?text=Invalid+URL'} />
-                                ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-700">
-                                        <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
-                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-20">No Image Specified</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <form onSubmit={handleAdd} className="space-y-4">
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] pl-1">Item Title</label>
-                                    <input value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} className="glass-input w-full p-4 rounded-2xl mt-1 font-bold" placeholder="e.g. Veg Noodles" required />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] pl-1">Price (₹)</label>
-                                        <input type="number" step="0.01" value={newItem.price} onChange={e => setNewItem({...newItem, price: parseFloat(e.target.value)})} className="glass-input w-full p-4 rounded-2xl mt-1 font-black text-yellow-500" required />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] pl-1">Category</label>
-                                        <input list="cats" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value.toUpperCase()})} className="glass-input w-full p-4 rounded-2xl mt-1 font-bold" placeholder="PIZZA..." required />
-                                        <datalist id="cats">{categories.map(c => <option key={c} value={c} />)}</datalist>
-                                    </div>
-                                </div>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] px-2 block mb-2">Image Source</label>
-                                        <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
-                                            <label className="flex-1 cursor-pointer py-3 rounded-xl flex items-center justify-center space-x-2 text-[10px] font-black uppercase tracking-widest hover:bg-white/5 transition-all text-slate-400 hover:text-white">
-                                                <Upload className="w-3.5 h-3.5" />
-                                                <span>Local File</span>
-                                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e)} />
-                                            </label>
-                                            <div className="w-[1px] bg-white/5 my-2"></div>
-                                            <div className="flex-[2] relative group">
-                                                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                                    <ImageIcon className="w-3.5 h-3.5 text-slate-600 group-focus-within:text-yellow-500" />
-                                                </div>
-                                                <input 
-                                                    value={newItem.imageUrl} 
-                                                    onChange={e => setNewItem({...newItem, imageUrl: e.target.value})} 
-                                                    className="w-full pl-9 pr-4 py-3 bg-transparent text-[10px] font-bold focus:outline-none placeholder:text-slate-700" 
-                                                    placeholder="Or paste URL..." 
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <GlassButton type="submit" variant="solid" className="w-full !py-6 text-sm">
-                                    PUBLISH TO CATALOG
-                                </GlassButton>
-                            </form>
-                        </GlassCard>
-                    </div>
-
-                    {/* Items List */}
-                    <div className="lg:col-span-2 space-y-6">
+                <div className="max-w-5xl mx-auto space-y-6">
                         <div className="flex items-center space-x-2 overflow-x-auto pb-4 no-scrollbar -mx-2 px-2">
                            {['ALL', ...categories].map(cat => (
                                <button 
@@ -294,6 +227,108 @@ const AdminPage = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Floating Action Button */}
+            <motion.button 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowAddModal(true)}
+                className="fixed bottom-8 right-8 z-50 p-6 bg-yellow-500 text-black rounded-full shadow-[0_20px_50px_rgba(250,204,21,0.4)] flex items-center justify-center group"
+            >
+                <PlusSquare className="w-8 h-8" />
+                <span className="w-0 overflow-hidden group-hover:w-32 group-hover:ml-3 transition-all duration-300 whitespace-nowrap text-sm font-black uppercase tracking-widest">New Entry</span>
+            </motion.button>
+
+            {/* New Entry Modal */}
+            <AnimatePresence>
+                {showAddModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowAddModal(false)}
+                            className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                        />
+                        <motion.div 
+                            initial={{ y: 50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 50, opacity: 0 }}
+                            className="relative w-full max-w-2xl"
+                        >
+                            <GlassCard className="border-yellow-500/20 overflow-hidden">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="text-3xl font-black italic text-yellow-500 flex items-center space-x-3 tracking-tighter">
+                                        <PlusSquare className="w-8 h-8" />
+                                        <span>ADD NEW ENTRY</span>
+                                    </h2>
+                                    <button onClick={() => setShowAddModal(false)} className="p-3 hover:bg-white/5 rounded-full transition-all">
+                                        <X className="w-8 h-8" />
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-col md:flex-row gap-8">
+                                    {/* Preview Side */}
+                                    <div className="w-full md:w-56 shrink-0 space-y-4">
+                                        <div className="aspect-square rounded-[2.5rem] bg-black/40 border border-white/5 overflow-hidden relative">
+                                            {newItem.imageUrl ? (
+                                                <img src={newItem.imageUrl} className="w-full h-full object-cover" alt="Preview" onError={(e) => e.target.src='https://placehold.co/600x400/111/FACC15?text=Invalid+URL'} />
+                                            ) : (
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-700">
+                                                    <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
+                                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-20">Preview</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-2xl text-center">
+                                             <span className="text-yellow-500 font-black text-2xl italic tracking-tighter">₹{newItem.price || 0}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Form Side */}
+                                    <form onSubmit={handleAdd} className="flex-1 space-y-5">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Item Title</label>
+                                            <input value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} className="glass-input w-full p-4 rounded-2xl font-bold" placeholder="e.g. Veg Noodles" required />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="flex-1">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Category</label>
+                                                <input list="cats-modal" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value.toUpperCase()})} className="glass-input w-full p-4 rounded-2xl font-bold uppercase" placeholder="PIZZA..." required />
+                                                <datalist id="cats-modal">{categories.map(c => <option key={c} value={c} />)}</datalist>
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Price (₹)</label>
+                                                <input type="number" step="0.01" value={newItem.price} onChange={e => setNewItem({...newItem, price: parseFloat(e.target.value)})} className="glass-input w-full p-4 rounded-2xl font-black text-yellow-500" required />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Image Identity</label>
+                                            <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
+                                                <label className="flex-1 cursor-pointer py-3.5 rounded-xl flex items-center justify-center space-x-2 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-slate-400 hover:text-white">
+                                                    <Upload className="w-4 h-4" />
+                                                    <span>Upload</span>
+                                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e)} />
+                                                </label>
+                                                <div className="w-[1px] bg-white/5 my-2"></div>
+                                                <input 
+                                                    value={newItem.imageUrl} 
+                                                    onChange={e => setNewItem({...newItem, imageUrl: e.target.value})} 
+                                                    className="flex-[2] pl-4 py-3 bg-transparent text-[10px] font-bold focus:outline-none placeholder:text-slate-700" 
+                                                    placeholder="Or paste URL..." 
+                                                />
+                                            </div>
+                                        </div>
+                                        <GlassButton type="submit" variant="solid" className="w-full !py-6 text-sm">
+                                            PUBLISH TO CATALOG
+                                        </GlassButton>
+                                    </form>
+                                </div>
+                            </GlassCard>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Profile Settings Modal */}
             <AnimatePresence>
