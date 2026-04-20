@@ -225,8 +225,7 @@ const AdminPage = () => {
                             ))}
                         </AnimatePresence>
                     </div>
-                </div>
-            </main>
+                </main>
 
             {/* Floating Action Button */}
             <motion.button 
