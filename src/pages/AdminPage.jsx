@@ -3,7 +3,7 @@ import { storage } from '../services/storage';
 import GlassCard from '../components/GlassCard';
 import GlassButton from '../components/GlassButton';
 import Sidebar from '../components/Sidebar';
-import { PlusSquare, Trash2, Edit3, Save, X, ImageIcon, Upload, Check, RefreshCw } from 'lucide-react';
+import { PlusSquare, Trash2, Edit3, Save, X, ImageIcon, Upload, Check, RefreshCw, UserCog, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminPage = () => {
@@ -12,9 +12,12 @@ const AdminPage = () => {
     const [newItem, setNewItem] = useState({ name: '', description: '', price: 0, category: '', imageUrl: '' });
     const [editItem, setEditItem] = useState({});
     const [filterCategory, setFilterCategory] = useState('ALL');
+    const [showSettings, setShowSettings] = useState(false);
+    const [adminCreds, setAdminCreds] = useState({ username: '', password: '' });
 
     useEffect(() => {
         setItems(storage.getMenu());
+        setAdminCreds(storage.getCredentials());
     }, []);
 
     const handleAdd = (e) => {
@@ -57,6 +60,13 @@ const AdminPage = () => {
         setItems(updated);
     };
 
+    const handleUpdateProfile = (e) => {
+        e.preventDefault();
+        storage.saveCredentials(adminCreds.username, adminCreds.password);
+        setShowSettings(false);
+        alert("Admin profile updated successfully!");
+    };
+
     const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean).sort();
     const filteredItems = items.filter(item => filterCategory === 'ALL' || item.category === filterCategory);
 
@@ -73,13 +83,23 @@ const AdminPage = () => {
                         <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1 opacity-60">Control your digital menu statically</p>
                     </div>
                     
-                    <button 
-                        onClick={handleReset}
-                        className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:bg-yellow-500/10 hover:text-yellow-500 transition-all text-[10px] font-black uppercase tracking-widest"
-                    >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Reset Defaults</span>
-                    </button>
+                    <div className="flex items-center space-x-3">
+                        <button 
+                            onClick={handleReset}
+                            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:bg-yellow-500/10 hover:text-yellow-500 transition-all text-[10px] font-black uppercase tracking-widest"
+                        >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>Reset Defaults</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => setShowSettings(true)}
+                            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all text-[10px] font-black uppercase tracking-widest"
+                        >
+                            <UserCog className="w-3.5 h-3.5" />
+                            <span>Profile Settings</span>
+                        </button>
+                    </div>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -274,6 +294,87 @@ const AdminPage = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Profile Settings Modal */}
+            <AnimatePresence>
+                {showSettings && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowSettings(false)}
+                            className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative w-full max-w-md"
+                        >
+                            <GlassCard className="border-yellow-500/30 overflow-hidden">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="p-3 bg-yellow-500 rounded-2xl text-black">
+                                            <UserCog className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-black italic tracking-tighter">ADMIN PROFILE</h2>
+                                            <p className="text-[10px] uppercase font-black tracking-widest text-slate-500">Security & Credentials</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/5 rounded-full transition-all">
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Admin Display Name</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                                    <UserCog className="w-5 h-5 text-slate-600 group-focus-within:text-yellow-500" />
+                                                </div>
+                                                <input 
+                                                    value={adminCreds.username}
+                                                    onChange={e => setAdminCreds({...adminCreds, username: e.target.value})}
+                                                    className="glass-input w-full pl-12 pr-4 py-4 rounded-2xl font-bold"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1 mb-2 block">New Password</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                                    <Lock className="w-5 h-5 text-slate-600 group-focus-within:text-yellow-500" />
+                                                </div>
+                                                <input 
+                                                    type="text"
+                                                    value={adminCreds.password}
+                                                    onChange={e => setAdminCreds({...adminCreds, password: e.target.value})}
+                                                    className="glass-input w-full pl-12 pr-4 py-4 rounded-2xl font-bold"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <GlassButton type="submit" variant="solid" className="w-full !py-6 text-sm">
+                                        UPDATE CREDENTIALS
+                                    </GlassButton>
+                                    
+                                    <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-50 px-4">
+                                        Warning: Changing your password will affect the login on your next session.
+                                    </p>
+                                </form>
+                            </GlassCard>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

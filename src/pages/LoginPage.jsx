@@ -4,6 +4,7 @@ import GlassCard from '../components/GlassCard';
 import GlassButton from '../components/GlassButton';
 import { Lock, User, Terminal } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { storage } from '../services/storage';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -12,11 +13,12 @@ const LoginPage = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'admin123') {
+    const creds = storage.getCredentials();
+    if (username === creds.username && password === creds.password) {
       localStorage.setItem('admin_auth', 'true');
       navigate('/admin');
     } else {
-      alert('Invalid credentials! (Try admin / admin123)');
+      alert(`Invalid credentials! (Try ${creds.username} / ${creds.password})`);
     }
   };
 
@@ -70,7 +72,7 @@ const LoginPage = () => {
             
             <div className="flex items-center justify-center space-x-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest opacity-60">
                 <Terminal className="w-3 h-3" />
-                <span>Default: admin / admin123</span>
+                <span>Default: {storage.getCredentials().username} / {storage.getCredentials().password}</span>
             </div>
           </form>
         </GlassCard>

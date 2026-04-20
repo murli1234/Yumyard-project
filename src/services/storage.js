@@ -1,4 +1,7 @@
 const MENU_KEY = 'yumyard_static_menu';
+const AUTH_KEY = 'yumyard_static_auth';
+
+const DEFAULT_AUTH = { username: 'admin', password: 'admin123' };
 
 const DEFAULT_ITEMS = [
     // 🍜 CHINESE CORNER
@@ -89,5 +92,20 @@ export const storage = {
     resetMenu: () => {
         localStorage.setItem(MENU_KEY, JSON.stringify(DEFAULT_ITEMS));
         return DEFAULT_ITEMS;
+    },
+
+    getCredentials: () => {
+        const stored = localStorage.getItem(AUTH_KEY);
+        if (!stored) {
+            localStorage.setItem(AUTH_KEY, JSON.stringify(DEFAULT_AUTH));
+            return DEFAULT_AUTH;
+        }
+        return JSON.parse(stored);
+    },
+
+    saveCredentials: (username, password) => {
+        const creds = { username, password };
+        localStorage.setItem(AUTH_KEY, JSON.stringify(creds));
+        return creds;
     }
 };
